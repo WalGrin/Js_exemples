@@ -1,6 +1,12 @@
-function Rabbit() {}
-// по умолчанию:
-// Rabbit.prototype = { constructor: Rabbit }
+Function.prototype.defer = function (ms) {
+    let f = this;
+    return (...args) => {
+        setTimeout(() => f.apply(this, args), ms );
+    }
+};
 
-let rabbit = new Rabbit(); // наследует от {constructor: Rabbit}
-console.log(rabbit.constructor == Rabbit);
+function f(a ,b) {
+    console.log(a + b);
+}
+
+f.defer(1000)(1, 2);
