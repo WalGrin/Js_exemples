@@ -25,6 +25,14 @@ class Temperature {
 }
 
 let temp = new Temperature(22);
+temp.log = function () {
+    console.log("Мое свойство или метод");
+}
+console.log(temp); // Temperature { celsius: 22, log: [Function (anonymous)] }
+console.log(temp.hasOwnProperty('fahrenheit')); // Является ли метод fahrenheit
+// собственностью объекта temp
+// Выведет false
+console.log(temp.hasOwnProperty('log')); //true
 console.log(temp.fahrenheit);
 temp.fahrenheit = 86;
 console.log(temp.celsius);
