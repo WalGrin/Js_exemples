@@ -4,3 +4,4 @@ function Rabbit() {}
 
 let rabbit = new Rabbit(); // наследует от {constructor: Rabbit}
 console.log(rabbit.constructor == Rabbit);
+console.log("Pull");
