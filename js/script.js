@@ -1,23 +1,28 @@
-let company = {
-    sales: [{name: 'John', salary: 1000}, {name: 'Alice', salary: 600 }],
-    development: {
-        sites: [{name: 'Peter', salary: 2000}, {name: 'Alex', salary: 1800 }],
-        internals: [{name: 'Jack', salary: 1300}]
-    }
-};
-
-function sumSalaries(department) {
-    if (Array.isArray(department)) {
-        return department.reduce((prev, current) => prev + current.salary, 0);
-    } else {
-        let sum = 0;
-        for (let subdep of Object.values(department)) {
-            console.log(subdep);
-            sum += sumSalaries(subdep);
-        }
-        return sum;
-    }
+function slow(x) {
+    // здесь могут быть ресурсоёмкие вычисления
+    console.log(`Called with ${x}`);
+    return x;
 }
 
-console.log(sumSalaries(company));
-console.log(Object.values(company));
+function cachingDecorator(func) {
+    let cache = new Map();
+
+    return function(x) {
+        if (cache.has(x)) {    // если кеш содержит такой x,
+            return cache.get(x); // читаем из него результат
+        }
+
+        let result = func(x); // иначе, вызываем функцию
+
+        cache.set(x, result); // и кешируем (запоминаем) результат
+        return result;
+    };
+}
+
+slow = cachingDecorator(slow);
+
+console.log( slow(1) ); // slow(1) кешируем
+console.log( "Again: " + slow(1) ); // возвращаем из кеша
+
+console.log( slow(2) ); // slow(2) кешируем
+console.log( "Again: " + slow(2) ); // возвращаем из кеша
