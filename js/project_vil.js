@@ -22,3 +22,32 @@ function buildGraph(edges) {
 
 const roadGraph = buildGraph(roads);
 console.log(roadGraph);
+
+class VillageState {
+    constructor (place, parcels) {
+        this.place = place;
+        this.parsels = parcels;
+    }
+
+    move(destination) {
+        if (!roadGraph[this.place].includes(destination)) {
+            return this;
+        } else {
+            let parcels = this.parsels.map(p => {
+                if (p.place !== this.place) return p;
+                return {place: destination, address:p.address}
+            }).filter(p => p.place !== p.address);
+            return new VillageState(destination, parcels);
+        }
+    }
+}
+
+let first = new VillageState(
+    "Почта", [{place: "Почта", address: "Дом Алисы"}]
+);
+
+let next = first.move("Дом Алисы");
+console.log(next);
+console.log(next.place);
+console.log(next.parsels);
+console.log(first.place);
