@@ -51,3 +51,31 @@ console.log(next);
 console.log(next.place);
 console.log(next.parsels);
 console.log(first.place);
+
+function runRobot(state, robot, memory) {
+    for (let turn = 0;;turn++) {
+        if(state.parsels.length === 0) {
+            console.log(`Выполнено за ${turn} ходов`);
+            break;
+        }
+        let action = robot(state, memory);
+        state = state.move(action.direction);
+        memory = action.memory;
+        console.log(`Переход  в направлении ${action.direction}`);
+    }
+}
+
+VillageState.random = function (parceCount = 5) {
+    let parcels = [];
+    for (let i = 0; i < parceCount; i++) {
+        let address = randomPick(Object.keys(roadGraph));
+        let place;
+        do {
+            place = randomPick(Object.keys(roadGraph));
+        } while (place === address);
+        parcels.push({place, address});
+    }
+    return new VillageState("Почта", parcels);
+};
+
+runRobot(VillageState.random(), randomRobot);
