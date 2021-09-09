@@ -1,28 +1,41 @@
-function slow(x) {
-    // здесь могут быть ресурсоёмкие вычисления
-    console.log(`Called with ${x}`);
-    return x;
-}
+let eventMixin = {
+    on(eventName, handler) {
+        if (!this._eventHandlers) this._eventHandlers = {};
+        if (!this._eventHandlers[eventName]) {
+            this._eventHandlers[eventName] = [];
+        }
+        this._eventHandlers[eventName].push(handler);
+    },
 
-function cachingDecorator(func) {
-    let cache = new Map();
+    off(eventName, handler) {
+        let handlers = this._eventHandlers && this._eventHandlers[eventName];
+        if (!handlers) return;
+        for (let i = 0; i<handlers.length; i++) {
+            if (handlers[i] === handler) {
+                handlers.slice(i--, 1);
+            }
+        }
+    },
 
-    return function(x) {
-        if (cache.has(x)) {    // если кеш содержит такой x,
-            return cache.get(x); // читаем из него результат
+    trigger (eventName, ...args) {
+        if (!this._eventHandlers || !this._eventHandlers[eventName]) {
+            return;
         }
 
-        let result = func(x); // иначе, вызываем функцию
-
-        cache.set(x, result); // и кешируем (запоминаем) результат
-        return result;
-    };
+        this._eventHandlers[eventName].forEach(handler => handler.apply(this, args));
+    }
 }
 
-slow = cachingDecorator(slow);
+class Menu {
+    choose(value) {
+        this.trigger("select", value);
+    }
+}
 
-console.log( slow(1) ); // slow(1) кешируем
-console.log( "Again: " + slow(1) ); // возвращаем из кеша
+Object.assign(Menu.prototype, eventMixin);
 
-console.log( slow(2) ); // slow(2) кешируем
-console.log( "Again: " + slow(2) ); // возвращаем из кеша
+let menu = new Menu();
+
+menu.on("select", value => console.log(`Выбранное значение ${value}`));
+
+menu.choose("123");
