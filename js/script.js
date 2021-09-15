@@ -1,41 +1,59 @@
-let eventMixin = {
-    on(eventName, handler) {
-        if (!this._eventHandlers) this._eventHandlers = {};
-        if (!this._eventHandlers[eventName]) {
-            this._eventHandlers[eventName] = [];
-        }
-        this._eventHandlers[eventName].push(handler);
-    },
+function noop() {
+} // пустая функция
 
-    off(eventName, handler) {
-        let handlers = this._eventHandlers && this._eventHandlers[eventName];
-        if (!handlers) return;
-        for (let i = 0; i<handlers.length; i++) {
-            if (handlers[i] === handler) {
-                handlers.slice(i--, 1);
-            }
-        }
-    },
-
-    trigger (eventName, ...args) {
-        if (!this._eventHandlers || !this._eventHandlers[eventName]) {
-            return;
+class MyPromise {
+    constructor(executer) {
+        this.chainOfThen = [];
+        this.errorHandler = noop; // то же самое, если здесь написать () =>{}
+        this.finallyHandler = noop;
+        try { //                        resolve                    reject
+            executer.call(null, this.onResolve.bind(this), this.onReject.bind(this))
+        } catch (e) {
+            this.errorHandler(e);
+        } finally {
+            this.finallyHandler();
         }
 
-        this._eventHandlers[eventName].forEach(handler => handler.apply(this, args));
+    }
+
+    onResolve(data) {
+        this.chainOfThen.forEach(callback => {
+            data = callback(data);
+        })
+
+        this.finallyHandler();
+    }
+
+    onReject(error) {
+        this.errorHandler(error);
+
+        this.finallyHandler();
+    }
+
+    then(fn) {
+        this.chainOfThen.push(fn);
+        return this; // возвращается класс MyPromise
+    }
+
+    catch(fn) {
+        this.errorHandler = fn;
+        return this;
+    }
+
+    finally(fn) {
+        this.finallyHandler = fn;
+        return this;
     }
 }
 
-class Menu {
-    choose(value) {
-        this.trigger("select", value);
-    }
-}
+const promise = new MyPromise((resolve, reject) => {
+    setTimeout(() => {
+        resolve('NgRx')
+    }, 150);
+})
 
-Object.assign(Menu.prototype, eventMixin);
-
-let menu = new Menu();
-
-menu.on("select", value => console.log(`Выбранное значение ${value}`));
-
-menu.choose("123");
+promise
+    .then(cource => cource.toUpperCase())
+    .then(title => console.log('My promise', title))
+    .catch(err => console.log('Error' ,err))
+    .finally(() => console.log('Finally'))
